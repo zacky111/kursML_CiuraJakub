@@ -98,3 +98,37 @@ Następnie sprawdzamy:
 air |> count(ozone)
 ```
 
+
+## Czy zmienne *date, wd, pm10, pm25, so2, co* wnoszą coś do modelu ?
+Z uwagi na to, ze zmienna ozone jest kategoryczna, przekształcamy ją na wartości binarne.
+```{r}
+
+air <- air |>
+  mutate(ozone = cut(o3, breaks = c(-0.1, 10, 53), labels = c("Niskie", "Wysokie")))
+air <- air |> mutate(ozone_binary = ifelse(ozone == "Wysokie", 1, 0))
+
+```
+
+Sam kierunek wiatru w takiej formie nie wnosi zbyt wiele w analizę (postać kątowa). Można spróbować przekształcić go jednak do postaci składowych wektorów - ma to większe prawdopodobieństwo do reprezentacji wpływu wiatru na stężenie ozonu.
+
+```{r}
+air <- air |>
+  mutate(
+    wd_cos = cos(wd * pi / 180),
+    wd_sin = sin(wd * pi / 180)
+  )
+
+```
+
+Wybieramy zmienne do analizy korelacji, po czym obliczamy macierz korelacji. Następnie wyświetlamy korelacje ozonu z innymi zmiennymi w porządku malejącym.
+
+```{r}
+
+cor_data <- air |> 
+  select(ozone_binary, nox, no2, ws, wd_cos, wd_sin, pm10, pm25, so2, co)
+
+cor_matrix <- cor(cor_data)
+cor_with_ozone <- cor_matrix["ozone_binary", ]
+cor_with_ozone[order(abs(cor_with_ozone), decreasing = TRUE)]
+```
+
