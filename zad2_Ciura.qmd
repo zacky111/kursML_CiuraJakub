@@ -1,0 +1,100 @@
+---
+title: "ZAD 2 - tidyverse"
+author: "Ciura Jakub"
+format: html
+editor: visual
+
+
+---
+
+## Realizację zadania rozpoczynamy od załadowania potrzebnych bibliotek oraz baz danych.
+```{r}
+#| echo: true
+#| results: "hide"
+#| message: false
+#| style:
+
+
+library(tidymodels) 
+library(skimr) 
+library(GGally) 
+library(openair) 
+tidymodels_prefer()
+```
+
+
+## Wczytujemy dane, dla konkretnego roku.
+```{r}
+air <- mydata |> selectByDate(year = 2004) 
+air |> skim()
+```
+
+
+## Usuwamy brakujące dane.
+```{r}
+air <- air |> na.omit()
+```
+
+
+## Przyglądamy się współczynnikom korelacji, w celu odnalezienia cech ważnych w predykcji stężeń ozonu.
+Według aktualnego stanu wiedzy istotne są parametry meteorologiczne, grupy czasu oraz tlenki azotu (przemiany chemiczne).
+```{r}
+set.seed(222)
+air[sample(1:nrow(air), size = 300, replace = F),] |> 
+  select(nox, no2) |> 
+  ggpairs()
+
+```
+
+## Tworzymy wykres regresji liniowej, w celu sprawdzenia powyższych hipotez.
+
+```{r}
+library(ggpubr)
+
+set.seed(222)
+air[sample(1:nrow(air), size = 300, replace = F),] |> 
+  select(nox, no2) |> 
+  ggplot(aes(nox, no2)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = T, formula = y ~ x) + 
+  stat_cor(label.x = 10, label.y = 80) + 
+  stat_regline_equation(label.x = 10, label.y = 82) +
+  theme_bw()
+```
+Jak widać na powyższym wykresie: nox i no2 są ze sobą mocno skorelowane.
+
+
+## Obserwujemy stężenie ozonu
+
+```{r}
+
+air |>    
+  ggplot(aes(date, o3)) +     
+  geom_line() +     
+  theme_bw()
+
+```
+Przyjmijmy założenie, że wysokie stężenia ozonu, to O3>10μgm3O3​>10m3μg​, a niskie to O3<10μgm3O3​<10m3μg​. Skorzystamy z podstawowej funkcji cut do przekształcenia zmiennej ilościowej na jakościową.
+
+```{r}
+air |> 
+  pull(o3) |> 
+  range()  
+```
+
+```{r}
+air <-
+  air |>
+  mutate(ozone = cut(
+    o3,
+    breaks = c(-0.1, 10, 53),
+    labels = c("Niskie", "Wysokie")
+  ))
+```
+
+
+Następnie sprawdzamy:
+```{r}
+air |> count(ozone)
+```
+
