@@ -99,40 +99,8 @@ air |> count(ozone)
 ```
 
 
-## Czy zmienne *date, wd, pm10, pm25, so2, co* wnoszą coś do modelu ?
-Z uwagi na to, ze zmienna ozone jest kategoryczna, przekształcamy ją na wartości binarne.
-```{r}
+## Zastanów się jakie role przypisać *no2* i *nox*, ponieważ te dwa predyktory są z sobą mocno skorelowane.
 
-air <- air |>
-  mutate(ozone = cut(o3, breaks = c(-0.1, 10, 53), labels = c("Niskie", "Wysokie")))
-air <- air |> mutate(ozone_binary = ifelse(ozone == "Wysokie", 1, 0))
+Zmienne no2 i nox są ze sobą mocno skorelowane, co może prowadzić do problemu współliniowości w modelu, co z kolei może negatywnie wpłynąć na jego interpretację oraz skuteczność. Współliniowość oznacza, że dwie lub więcej zmiennych wyjaśniają podobną część wariancji, co może utrudniać wyraźne określenie ich indywidualnych wpływów na zmienną zależną.
 
-```
-
-Sam kierunek wiatru w takiej formie nie wnosi zbyt wiele w analizę (postać kątowa). Można spróbować przekształcić go jednak do postaci składowych wektorów - ma to większe prawdopodobieństwo do reprezentacji wpływu wiatru na stężenie ozonu.
-
-```{r}
-air <- air |>
-  mutate(
-    wd_cos = cos(wd * pi / 180),
-    wd_sin = sin(wd * pi / 180)
-  )
-
-```
-
-Wybieramy zmienne do analizy korelacji, po czym obliczamy macierz korelacji. Następnie wyświetlamy korelacje ozonu z innymi zmiennymi w porządku malejącym.
-
-```{r}
-
-cor_data <- air |> 
-  select(ozone_binary, nox, no2, ws, wd_cos, wd_sin, pm10, pm25, so2, co)
-
-cor_matrix <- cor(cor_data)
-cor_with_ozone <- cor_matrix["ozone_binary", ]
-cor_with_ozone[order(abs(cor_with_ozone), decreasing = TRUE)]
-```
-
-Obserwując powyższe wyniki, zauważamy które zmienne warto rozważyć przy tworzeniu modelu.
-Są to oprócz potwierdzonych wcześniej *nox* i *no2*: *co*, *wd_cos*,*pm10* oraz *pm25*.
-Pozostałe zmienne, których współćzynnik korelacji z ozonem wynosi <0.3, uznaje za nisko skorelowane z ozonem.
-
+Z uwagi na wysoką korelację między no2 i nox, koniecznym jest aby rozważyć, czy włączyć tylko jedną z nich do modelu, utworzyć nową zmienną łączącą obie, lub zastosować zaawansowane techniki, takie jak PCA lub regularyzacja. 

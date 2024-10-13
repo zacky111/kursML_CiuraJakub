@@ -439,38 +439,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </section>
-<section id="czy-zmienne-date-wd-pm10-pm25-so2-co-wnoszą-coś-do-modelu" class="level2">
-<h2 class="anchored" data-anchor-id="czy-zmienne-date-wd-pm10-pm25-so2-co-wnoszą-coś-do-modelu">Czy zmienne <em>date, wd, pm10, pm25, so2, co</em> wnoszą coś do modelu ?</h2>
-<p>Z uwagi na to, ze zmienna ozone jest kategoryczna, przekształcamy ją na wartości binarne.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>air <span class="ot">&lt;-</span> air <span class="sc">|&gt;</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ozone =</span> <span class="fu">cut</span>(o3, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.1</span>, <span class="dv">10</span>, <span class="dv">53</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Niskie"</span>, <span class="st">"Wysokie"</span>)))</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>air <span class="ot">&lt;-</span> air <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">ozone_binary =</span> <span class="fu">ifelse</span>(ozone <span class="sc">==</span> <span class="st">"Wysokie"</span>, <span class="dv">1</span>, <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Sam kierunek wiatru w takiej formie nie wnosi zbyt wiele w analizę (postać kątowa). Można spróbować przekształcić go jednak do postaci składowych wektorów - ma to większe prawdopodobieństwo do reprezentacji wpływu wiatru na stężenie ozonu.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>air <span class="ot">&lt;-</span> air <span class="sc">|&gt;</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">wd_cos =</span> <span class="fu">cos</span>(wd <span class="sc">*</span> pi <span class="sc">/</span> <span class="dv">180</span>),</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">wd_sin =</span> <span class="fu">sin</span>(wd <span class="sc">*</span> pi <span class="sc">/</span> <span class="dv">180</span>)</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Wybieramy zmienne do analizy korelacji, po czym obliczamy macierz korelacji. Następnie wyświetlamy korelacje ozonu z innymi zmiennymi w porządku malejącym.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>cor_data <span class="ot">&lt;-</span> air <span class="sc">|&gt;</span> </span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(ozone_binary, nox, no2, ws, wd_cos, wd_sin, pm10, pm25, so2, co)</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>cor_matrix <span class="ot">&lt;-</span> <span class="fu">cor</span>(cor_data)</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>cor_with_ozone <span class="ot">&lt;-</span> cor_matrix[<span class="st">"ozone_binary"</span>, ]</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>cor_with_ozone[<span class="fu">order</span>(<span class="fu">abs</span>(cor_with_ozone), <span class="at">decreasing =</span> <span class="cn">TRUE</span>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>ozone_binary          nox          no2           co       wd_cos         pm10 
-  1.00000000  -0.52939038  -0.47907495  -0.46332521   0.39057416  -0.36840517 
-        pm25          so2       wd_sin           ws 
- -0.36289052  -0.28442363   0.20915691   0.07104426 </code></pre>
-</div>
-</div>
-<p>Obserwując powyższe wyniki, zauważamy które zmienne warto rozważyć przy tworzeniu modelu. Są to oprócz potwierdzonych wcześniej <em>nox</em> i <em>no2</em>: <em>co</em>, <em>wd_cos</em>,<em>pm10</em> oraz <em>pm25</em>. Pozostałe zmienne, których współćzynnik korelacji z ozonem wynosi &lt;0.3, uznaje za nisko skorelowane z ozonem.</p>
+<section id="zastanów-się-jakie-role-przypisać-no2-i-nox-ponieważ-te-dwa-predyktory-są-z-sobą-mocno-skorelowane." class="level2">
+<h2 class="anchored" data-anchor-id="zastanów-się-jakie-role-przypisać-no2-i-nox-ponieważ-te-dwa-predyktory-są-z-sobą-mocno-skorelowane.">Zastanów się jakie role przypisać <em>no2</em> i <em>nox</em>, ponieważ te dwa predyktory są z sobą mocno skorelowane.</h2>
+<p>Zmienne no2 i nox są ze sobą mocno skorelowane, co może prowadzić do problemu współliniowości w modelu, co z kolei może negatywnie wpłynąć na jego interpretację oraz skuteczność. Współliniowość oznacza, że dwie lub więcej zmiennych wyjaśniają podobną część wariancji, co może utrudniać wyraźne określenie ich indywidualnych wpływów na zmienną zależną.</p>
+<p>Z uwagi na wysoką korelację między no2 i nox, koniecznym jest aby rozważyć, czy włączyć tylko jedną z nich do modelu, utworzyć nową zmienną łączącą obie, lub zastosować zaawansowane techniki, takie jak PCA lub regularyzacja.</p>
 </section>
 
 </main>
