@@ -99,8 +99,55 @@ air |> count(ozone)
 ```
 
 
-## Zastanów się jakie role przypisać *no2* i *nox*, ponieważ te dwa predyktory są z sobą mocno skorelowane.
+## Tworzenie modelu regresji logistycznej.
 
-Zmienne no2 i nox są ze sobą mocno skorelowane, co może prowadzić do problemu współliniowości w modelu, co z kolei może negatywnie wpłynąć na jego interpretację oraz skuteczność. Współliniowość oznacza, że dwie lub więcej zmiennych wyjaśniają podobną część wariancji, co może utrudniać wyraźne określenie ich indywidualnych wpływów na zmienną zależną.
+Zadanie rozpoczynamy od podziału zbiorów na zbiór treningowy i testowy.
 
-Z uwagi na wysoką korelację między no2 i nox, koniecznym jest aby rozważyć, czy włączyć tylko jedną z nich do modelu, utworzyć nową zmienną łączącą obie, lub zastosować zaawansowane techniki, takie jak PCA lub regularyzacja. 
+```{r}
+
+set.seed(222)
+split <- initial_split(air, strata = ozone, prop = 0.7)  # 70% na trening, 30% na test
+train_data <- training(split)
+test_data <- testing(split)
+
+
+```
+
+Następnie budujemy model regresji logistycznej.
+```{r}
+
+log_model <- logistic_reg() |> 
+  set_engine("glm") |> 
+  set_mode("classification")
+
+log_recipe <- recipe(ozone ~ nox + no2, data = train_data) |> 
+  step_normalize(all_predictors())  # Normalizacja zmiennych niezależnych
+
+log_workflow <- workflow() |> 
+  add_model(log_model) |> 
+  add_recipe(log_recipe)
+
+```
+
+Trenujemy model na zbiorze treningowym
+```{r}
+
+log_fit <- log_workflow |> 
+  fit(data = train_data)
+
+```
+
+Finalnie, oceniamy model na zbiorze testowym, aby sprawdzić jego skuteczność w przewidywaniu poziomu ozonu.
+```{r}
+
+test_predictions <- predict(log_fit, test_data) |> 
+  bind_cols(test_data)
+
+metrics <- test_predictions |> 
+  yardstick::metrics(truth = ozone, estimate = .pred_class)
+
+metrics
+
+```
+
+Jak możemy zauważyć, zgodność modelu jest względnie wysoka - 82%.
