@@ -132,3 +132,7 @@ cor_with_ozone <- cor_matrix["ozone_binary", ]
 cor_with_ozone[order(abs(cor_with_ozone), decreasing = TRUE)]
 ```
 
+Obserwując powyższe wyniki, zauważamy które zmienne warto rozważyć przy tworzeniu modelu.
+Są to oprócz potwierdzonych wcześniej *nox* i *no2*: *co*, *wd_cos*,*pm10* oraz *pm25*.
+Pozostałe zmienne, których współćzynnik korelacji z ozonem wynosi <0.3, uznaje za nisko skorelowane z ozonem.
+
