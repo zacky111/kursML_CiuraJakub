@@ -101,6 +101,3 @@ air |> count(ozone)
 
 ## Zastanów się jakie role przypisać *no2* i *nox*, ponieważ te dwa predyktory są z sobą mocno skorelowane.
 
-Zmienne no2 i nox są ze sobą mocno skorelowane, co może prowadzić do problemu współliniowości w modelu, co z kolei może negatywnie wpłynąć na jego interpretację oraz skuteczność. Współliniowość oznacza, że dwie lub więcej zmiennych wyjaśniają podobną część wariancji, co może utrudniać wyraźne określenie ich indywidualnych wpływów na zmienną zależną.
-
-Z uwagi na wysoką korelację między no2 i nox, koniecznym jest aby rozważyć, czy włączyć tylko jedną z nich do modelu, utworzyć nową zmienną łączącą obie, lub zastosować zaawansowane techniki, takie jak PCA lub regularyzacja. 
