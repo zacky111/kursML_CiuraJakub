@@ -2,6 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+
+*.Rproj
+*.html
+
 zad2_Ciura_files/
 
 /.quarto/
