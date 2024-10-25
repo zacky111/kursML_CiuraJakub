@@ -2,13 +2,19 @@
 title: "ZAD 1 - tidyverse"
 author: "Ciura Jakub"
 format: html
-editor: visual
+editor_options: 
+  chunk_output_type: console
+---
 
-description: "
+yaml - proszę poprawić. 
+
+MRZ: Pan chyba stworzył wiele gałęzi, wiele zadań, ale głównym repo jest niewiele bo nie ma `pull requests`. Patrzę na pana repo i widę wiele `branch` otwrtych a nie scalonych. WYmga silnje ingerencji.  
+
+## Treść
+
 Opracuj model prognoz O3 na podstawie zestawu danych airquality. Następnie wykonaj prognozę dla dowolnego zestawu danych. sprawdzić czy miesiące mają wpływ na prognozę. Usuń braki danych. Zastanów się jak przekształcić zmienne. Nie uwzględniaj zmiennej day w prognozach. Nie uwzględniaj interakcji między zmiennymi. W celu podglądnięcia danych zastosuj funkcje pakietu gggally. Zastosuj tylko metodę najmniejszych kwadratów.
 
 Zacznij od przygotowania danych, zastanów się co tu robimy. Opisz w komentarzach poszczególne kroki korzystając z systemu pomocy R."
----
 
 ## Realizację zadania rozpoczynamy od załadowania potrzebnych bibliotek.
 
@@ -64,9 +70,11 @@ head(air_scaled)
 
 ## Budujemy model regresji liniowej na podstawie przeskalowanych zmiennych.
 
+Czy to jest najlepszy model ? np.:
+
 ```{r}
 
-model <- lm(ozone ~ temp + wind + solar.r + month, data = air_scaled)
+model <- lm(ozone ~ temp + wind * solar.r, data = air_scaled)
 ```
 
 ## Wyświetlamy podsumowanie modelu.
@@ -75,6 +83,16 @@ model <- lm(ozone ~ temp + wind + solar.r + month, data = air_scaled)
 summary(model)
 ```
 
+```{r}
+library(broom)
+library(GGally)
+
+model |> 
+  tidy() |> 
+  mutate(p.stars = signif_stars(p.value)) 
+```
+
+
 ## Na podstawie opracowanego modelu prognozujemy nowe dane.
 
 ```{r}
@@ -82,3 +100,11 @@ summary(model)
 predictions <- predict(model, newdata = air_scaled)
 head(predictions)
 ```
+
+Przeprowadź ocenę modelu z:
+
+```{r}
+library(yardstick)
+```
+
+
